@@ -8,10 +8,7 @@ import 'package:tagify/vm/connect_vm.dart';
 import 'package:tagify/vm/player_vm.dart';
 import 'package:tagify/vm/tracks_vm.dart';
 
-// void main() => runApp(Root());
-void main() {
-  return runApp(Root());
-}
+void main() => runApp(Root());
 
 class Root extends StatelessWidget {
   @override
@@ -60,7 +57,7 @@ class _ConnectControllerViewState extends State<ConnectControllerView> {
                   home: MainPage(),
                   providers: [
                     ChangeNotifierProvider<TracksVM>(create: (_) => TracksVM()),
-                    ChangeNotifierProvider<PlayerVM>(create: (_) => PlayerVM()),
+                    ChangeNotifierProvider<PlayerVM>(create: (_) => PlayerVM(TagifyTheme.of(context))),
                   ],
                 );
               }

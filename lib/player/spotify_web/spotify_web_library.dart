@@ -96,14 +96,31 @@ class SpotifyWebLibrary extends Library {
     }
     return null;
   }
+
+  Future<Album> getAlbum(String albumId) async {
+    try {
+      final response = await http.get(
+        SpotifyAPI.ALBUM.replaceAll("{id}", albumId),
+        headers: {
+          SpotifyAPI.AUTH_HEADER: "Bearer ${Connect.instance.token}"
+        }
+      );
+
+      final data = json.decode(response.body);
+      return _Helpers.albumFromMap(data);
+    } on Exception catch(e) {
+      print(e);
+    }
+    return null;
+  }
 }
 
 class _Helpers {
   static Album albumFromMap(Map map) => Album(
     uri: map['uri'],
     name: map['name'],
-    artists: null,
-    albumArt: null
+    artists: artistsFromList(map['artists']),
+    albumArt: map['images'][0]['url'] //TODO: get all sizes of album art
   );
 
   static Track trackFromMap(Map map) => Track(

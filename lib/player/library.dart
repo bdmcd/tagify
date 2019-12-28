@@ -29,5 +29,6 @@ abstract class Library {
   Future<List<Album>> getAlbums();
   Future<List<Album>> getNextAlbums({ var offset });
 
-  Future<Track> getTrack(String uri);
+  Future<Track> getTrack(String trackId);
+  Future<Album> getAlbum(String albumId);
 }

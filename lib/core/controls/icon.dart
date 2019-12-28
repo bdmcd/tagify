@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' as m;
+import 'package:provider/provider.dart';
 import 'package:tagify/core/theme.dart';
 
 class Icon extends m.StatelessWidget {
@@ -56,18 +57,22 @@ class IconButton extends m.StatelessWidget {
 
   @override
   m.Widget build(m.BuildContext context) {
-    final c = this.color ?? TagifyTheme.of(context).foreground;
-    final dc = this.disabledColor ?? TagifyTheme.of(context).disabled;
-    final hc = this.highlightedColor ?? TagifyTheme.of(context).primary;
+    return Consumer<TagifyTheme>(
+      builder: (context, theme, _) {
+        final c = this.color ?? theme.foreground;
+        final dc = this.disabledColor ?? theme.disabled;
+        final hc = this.highlightedColor ?? theme.tagifyDark;
 
-    return m.IconButton(
-      icon: this.icon,
-      onPressed: this.onPressed,
-      color: this.disabled ? dc : this.highlighted ? hc : c,
-      highlightColor: this.highlightedColor,
-      disabledColor: this.disabledColor,
-      iconSize: this.iconSize ?? 24,
-      splashColor: m.Colors.transparent,
+        return m.IconButton(
+          icon: this.icon,
+          onPressed: this.onPressed,
+          color: this.disabled ? dc : this.highlighted ? hc : c,
+          highlightColor: this.highlightedColor,
+          disabledColor: this.disabledColor,
+          iconSize: this.iconSize ?? 24,
+          splashColor: m.Colors.transparent,
+        );
+      }
     );
   }
 }

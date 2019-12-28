@@ -8,10 +8,6 @@ import 'package:tagify/model/now_playing.dart';
 import 'package:tagify/vm/player_vm.dart';
 import 'package:tagify/core/controls/lib.dart' as c;
 
-const url = 'https://cdnb.artstation.com/p/assets/images/images/002/490/351/large/david-ardinaryas-lojaya-jon-bellion-front-cover-final-1.jpg?1466083884';
-// const url = 'https://dvfnvgxhycwzf.cloudfront.net/media/SharedImage/imageFull/.fNtPdHZU/SharedImage-9642.jpg?t=59c5cebdc93c3d243a41';
-// const url = 'https://m.media-amazon.com/images/I/916wNKaG-yL._SS500_.jpg';
-
 class NowPlayingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -24,9 +20,12 @@ class NowPlayingView extends StatelessWidget {
               child: Transform.scale(
                 scale: 1.1,
                 alignment: Alignment.center,
-                child: Image.network(
-                  url,
-                  fit: BoxFit.cover,
+                child:       Consumer<PlayerVM>(
+                  builder: (context, player, _) {
+                    return _getImageWidget(
+                      player,
+                    );
+                  },
                 ),
               ),
             ),
@@ -40,10 +39,13 @@ class NowPlayingView extends StatelessWidget {
                       child: Transform(
                         alignment: Alignment.center,
                         transform: Matrix4.rotationX(math.pi),
-                        child: Image.network(
-                          url, 
-                          fit: BoxFit.cover,
-                          alignment: Alignment.bottomCenter,
+                        child: Consumer<PlayerVM>(
+                          builder: (context, player, _) {
+                            return _getImageWidget(
+                              player,
+                              alignment: Alignment.bottomCenter,
+                            );
+                          }
                         ),
                       ),
                     )
@@ -77,18 +79,20 @@ class _NowPlaying extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 48),
           child: Column(
             children: <Widget>[
-              Stack(
-                children: <Widget>[
-                  Container(
-                    height: 3,
-                    color: TagifyTheme.of(context).washed,
-                  ),
-                  Container(
-                    height: 3,
-                    width: 134,
-                    color: TagifyTheme.of(context).primary,
-                  )
-                ],
+              Consumer<TagifyTheme>(
+                builder: (context, _, __) => Stack(
+                  children: <Widget>[
+                    Container(
+                      height: 3,
+                      color: TagifyTheme.of(context).tagify.withOpacity(0.3),
+                    ),
+                    Container(
+                      height: 3,
+                      width: 134,
+                      color: TagifyTheme.of(context).tagify,
+                    )
+                  ],
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -114,7 +118,7 @@ class _NowPlaying extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    '${nowPlaying.track.artist.name}  -  ${nowPlaying.track.album.name}',
+                    '${nowPlaying.track.artist.name}',
                     style: Theme.of(context).textTheme.subhead.copyWith(fontWeight: FontWeight.w300),
                   )
                 ],
@@ -127,7 +131,7 @@ class _NowPlaying extends StatelessWidget {
                     c.IconButton(
                       icon: Icon(Icons.shuffle),
                       onPressed: player.toggleShuffle,
-                      highlightedColor: TagifyTheme.of(context).darkened,
+                      highlightedColor: TagifyTheme.of(context).tagifyDark,
                       highlighted: nowPlaying.isShuffling,
                     ),
                     c.IconButton(
@@ -148,7 +152,7 @@ class _NowPlaying extends StatelessWidget {
                     c.IconButton(
                       icon: Icon(nowPlaying.repeatMode == RepeatMode.RepeatOne ? Icons.repeat_one : Icons.repeat),
                       highlighted: nowPlaying.repeatMode != RepeatMode.None,
-                      highlightedColor: TagifyTheme.of(context).darkened,
+                      highlightedColor: TagifyTheme.of(context).tagifyDark,
                       onPressed: player.toggleRepeat,
                     ),
                   ],
@@ -160,4 +164,15 @@ class _NowPlaying extends StatelessWidget {
       },
     );
   }
+}
+
+Widget _getImageWidget(PlayerVM player, { Alignment alignment = Alignment.center }) {
+  if (player.nowPlaying != null && player.nowPlaying.track.album != null && player.nowPlaying.track.album.albumArt != null) {
+    return Image.network(
+      player.nowPlaying.track.album.albumArt,
+      fit: BoxFit.cover,
+      alignment: alignment
+    );
+  }
+  return Container();
 }

@@ -18,10 +18,11 @@ class Album extends Playable {
     String uri,
     String name,
     List<Artist> artists,
-    bool isLocal,
+    String albumArt,
   }) => Album(
     uri: uri ?? this.uri,
     name: name ?? this.name,
     artists: artists ?? this.artists,
+    albumArt: albumArt ?? this.albumArt,
   );
 }

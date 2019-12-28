@@ -2,24 +2,34 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tagify/core/theme.dart';
 import 'package:tagify/model/now_playing.dart';
 import 'package:tagify/model/track.dart';
+import 'package:tagify/player/library.dart';
 import 'package:tagify/player/player.dart';
 
 class PlayerVM extends ChangeNotifier {
   static PlayerVM of(BuildContext context) => Provider.of<PlayerVM>(context);
+  final TagifyTheme theme; //TODO: find a better way to connect these two
+
+  PlayerVM(this.theme);
 
   NowPlaying _nowPlaying;
-
   NowPlaying get nowPlaying => _nowPlaying;
 
   Future<void> updateNowPlaying() async {
     _nowPlaying = await Player.instance.nowPlaying();
+    _nowPlaying = _nowPlaying.copyWith(
+      track: _nowPlaying.track.copyWith(
+        album: await Library.instance.getAlbum(_nowPlaying.track.album.id)
+      )
+    );
   }
 
   Future<void> updateNotify() async {
-    await Future.delayed(Duration(milliseconds: 100));
+    await Future.delayed(Duration(milliseconds: 500));
     await updateNowPlaying();
+    theme.setPalette(_nowPlaying.track.album);
     await Future.delayed(Duration(milliseconds: 100));
 
     notifyListeners();

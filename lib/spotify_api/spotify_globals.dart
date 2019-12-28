@@ -7,6 +7,7 @@ class SpotifyAPI {
   static const String TRACKS = '$API_URL/me/tracks';
   static const String ALBUMS = '$API_URL/me/albums';
   static const String TRACK = '$API_URL/tracks/{id}';
+  static const String ALBUM = '$API_URL/albums/{id}';
 
   static String idFromUri(String uri) {
     return uri.substring(uri.lastIndexOf(":") + 1);

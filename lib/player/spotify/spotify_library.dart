@@ -30,4 +30,9 @@ class SpotifyLibrary extends Library {
   Future<Track> getTrack(String trackId) async {
     return await _web.getTrack(trackId);
   }
+
+  @override
+  Future<Album> getAlbum(String albumId) async {
+    return await _web.getAlbum(albumId);
+  }
 }
