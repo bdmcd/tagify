@@ -57,7 +57,12 @@ class _ConnectControllerViewState extends State<ConnectControllerView> {
                   home: MainPage(),
                   providers: [
                     ChangeNotifierProvider<TracksVM>(create: (_) => TracksVM()),
-                    ChangeNotifierProvider<PlayerVM>(create: (_) => PlayerVM(TagifyTheme.of(context))),
+                    ChangeNotifierProvider<ShuffleVM>(create: (_) => ShuffleVM()),
+                    ChangeNotifierProvider<RepeatModeVM>(create: (_) => RepeatModeVM()),
+                    ChangeNotifierProvider<ResumePauseVM>(create: (_) => ResumePauseVM()),
+                    ChangeNotifierProvider<NowPlayingVM>(create: (_) => NowPlayingVM()),
+                    ChangeNotifierProvider<AlbumArtVM>(create: (_) => AlbumArtVM()),
+                    ChangeNotifierProvider<PlayerControls>(create: (_) => PlayerControls()),
                   ],
                 );
               }

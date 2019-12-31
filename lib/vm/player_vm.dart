@@ -1,131 +1,90 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tagify/core/theme.dart';
 import 'package:tagify/model/now_playing.dart';
 import 'package:tagify/model/track.dart';
-import 'package:tagify/player/library.dart';
 import 'package:tagify/player/player.dart';
 
-class PlayerVM extends ChangeNotifier {
-  static PlayerVM of(BuildContext context) => Provider.of<PlayerVM>(context);
-  final TagifyTheme theme; //TODO: find a better way to connect these two
+class PlayerNotifier extends ChangeNotifier implements PlayerListener {
+  @override
+  notify() => this.notifyListeners();
+}
 
-  PlayerVM(this.theme);
+class ShuffleVM extends PlayerNotifier {
+  static ShuffleVM of(BuildContext context) => Provider.of<ShuffleVM>(context);
 
-  NowPlaying _nowPlaying;
-  NowPlaying get nowPlaying => _nowPlaying;
-
-  Future<void> updateNowPlaying() async {
-    _nowPlaying = await Player.instance.nowPlaying();
-    _nowPlaying = _nowPlaying.copyWith(
-      track: _nowPlaying.track.copyWith(
-        album: await Library.instance.getAlbum(_nowPlaying.track.album.id)
-      )
-    );
+  ShuffleVM() {
+    Player.instance.shuffleListeners.add(this);
   }
 
-  Future<void> updateNotify() async {
-    await Future.delayed(Duration(milliseconds: 500));
-    await updateNowPlaying();
-    theme.setPalette(_nowPlaying.track.album);
-    await Future.delayed(Duration(milliseconds: 100));
+  @override
+  notify() => this.notifyListeners();
 
-    notifyListeners();
+  bool get isShuffling => Player.instance.isShuffling;
+  toggleShuffle() async => await Player.instance.toggleShuffle();
+}
+
+class RepeatModeVM extends PlayerNotifier {
+  static RepeatModeVM of(BuildContext context) => Provider.of<RepeatModeVM>(context);
+
+  RepeatModeVM() {
+    Player.instance.repeatModeListeners.add(this);
   }
 
-  void tempUpdate(NowPlaying temp) {
-    _nowPlaying = temp;
-    notifyListeners();
+  RepeatMode get repeatMode => Player.instance.repeatMode;
+  toggleRepeat() async => await Player.instance.toggleRepeat();
+}
+
+class ResumePauseVM extends PlayerNotifier {
+  static ResumePauseVM of(BuildContext context) => Provider.of<ResumePauseVM>(context);
+
+  ResumePauseVM() {
+    Player.instance.isPausedListeners.add(this);
   }
 
-  Future<NowPlaying> getNowPlaying() async {
-    if (nowPlaying == null) {
-      await updateNowPlaying();
+  @override
+  notify() => this.notifyListeners();
+
+  bool get isPaused => Player.instance.isPaused;
+  resume() async => await Player.instance.resume();
+  pause() async => await Player.instance.pause();
+  toggle() async {
+    if (isPaused) {
+      resume();
+    } else {
+      pause();
     }
-    return nowPlaying;
+  }
+}
+
+class NowPlayingVM extends PlayerNotifier {
+  static NowPlayingVM of(BuildContext context) => Provider.of<NowPlayingVM>(context);
+
+  NowPlayingVM() {
+    Player.instance.trackInfoListeners.add(this);
   }
 
-  Future<bool> play(Track track) async {
-    tempUpdate(nowPlaying.copyWith(
-      position: 0,
-      track: track, 
-      isPaused: false, 
-    ));
+  Future<bool> init() async => await Player.instance.init();
 
-    final r = await Player.instance.play(track);
-    await updateNotify();
-    return r;
+  Track get track => Player.instance.track;
+}
+
+class AlbumArtVM extends PlayerNotifier {
+  static AlbumArtVM of(BuildContext context) => Provider.of<AlbumArtVM>(context);
+
+  AlbumArtVM() {
+    Player.instance.albumArtListeners.add(this);
   }
 
-  Future<bool> pause() async {
-    tempUpdate(nowPlaying.copyWith(
-      isPaused: true
-    ));
+  //TODO: get album art
+}
 
-    final r = await Player.instance.pause();
-    await updateNotify();
-    return r;
-  }
+class PlayerControls extends ChangeNotifier {
+  static PlayerControls of(BuildContext context) => Provider.of<PlayerControls>(context);
 
-  Future<bool> resume() async {
-    tempUpdate(nowPlaying.copyWith(
-      position: 0,
-      isPaused: false, 
-    ));
-    
-    final r = await Player.instance.resume();
-    await updateNotify();
-    return r;
-  }
-
-  Future<bool> next() async {
-    tempUpdate(nowPlaying.copyWith(
-      position: 0,
-      isPaused: false, 
-    ));
-
-    final r = await Player.instance.next();
-    await updateNotify();
-    return r;
-  }
-
-  Future<bool> previous() async {
-    tempUpdate(nowPlaying.copyWith(
-      position: 0,
-    ));
-
-    final r = await Player.instance.previous();
-    await updateNotify();
-    return r;
-  }
-
-  Future<bool> queue(Track track) async {
-    final r = await Player.instance.queue(track);
-    await updateNotify();
-    return r;
-  }
-
-  Future<bool> toggleShuffle() async {
-    tempUpdate(nowPlaying.copyWith(
-      isShuffling: !nowPlaying.isShuffling
-    ));
-
-    final r = await Player.instance.toggleShuffle();
-    await updateNotify();
-    return r;
-  }
-
-  Future<bool> toggleRepeat() async {
-    var newRepeatMode = nowPlaying.repeatMode.index - 1;
-    if (newRepeatMode < 0) newRepeatMode = nowPlaying.maxRepeatMode;
-    tempUpdate(nowPlaying.copyWith(
-      repeatMode: RepeatMode.values[newRepeatMode],
-    ));
-
-    final r = await Player.instance.toggleRepeat();
-    await updateNotify();
-    return r;
-  }
+  play(Track track) async => await Player.instance.play(track);
+  queue(Track track) async => await Player.instance.queue(track);
+  next() async => await Player.instance.next();
+  previous() async => await Player.instance.previous();
+  resume() async => await Player.instance.resume();
+  pause() async => await Player.instance.pause();
 }

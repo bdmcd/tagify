@@ -11,8 +11,8 @@ class SpotifyWebConnect extends Connect {
   Future<bool> connect() async {
     try {
       final tok = await SpotifyPlayback.getAuthToken(
-        clientId: SpotifyAPI.CLIENT_ID,
-        redirectUrl: SpotifyAPI.REDIRECT_URI
+        SpotifyAPI.CLIENT_ID, 
+        SpotifyAPI.REDIRECT_URI
       );
 
       if (tok != null && tok.isNotEmpty) {

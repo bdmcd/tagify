@@ -25,8 +25,8 @@ class TracksView extends StatelessWidget {
                     final track = tracks[index];
                     return ListTile(
                       title: Text(track.name),
-                      onTap: () => PlayerVM.of(context).play(track),
-                      onLongPress: () => PlayerVM.of(context).queue(track),
+                      onTap: () => PlayerControls.of(context).play(track),
+                      onLongPress: () => PlayerControls.of(context).queue(track),
                     );
                   },
                 ),

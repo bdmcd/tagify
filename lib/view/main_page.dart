@@ -5,8 +5,8 @@ import 'package:tagify/view/albums_view.dart';
 import 'package:tagify/view/artists_view.dart';
 import 'package:tagify/view/now_playing_bar.dart';
 import 'package:tagify/view/tracks_view.dart';
-import 'package:tagify/vm/tracks_vm.dart';
 import 'package:tagify/core/controls/lib.dart' as c;
+import 'package:tagify/vm/player_vm.dart';
 
 enum Page {
   tracks,
@@ -19,12 +19,20 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: TagifyTheme.of(context).background,
-      body: MultiProvider(
-        providers: [
-          ChangeNotifierProvider<_MainPageState>(create: (_) => _MainPageState()),
-          ChangeNotifierProvider<TracksVM>(create: (_) => TracksVM()),
-        ],
-        child: _MainPage(),
+      body: FutureBuilder<bool>(
+        future: NowPlayingVM.of(context).init(),
+        builder: (context, snapshot) {
+          print("building");
+          if (snapshot.hasData && snapshot.data) {
+            return MultiProvider(
+              providers: [
+                ChangeNotifierProvider<_MainPageState>(create: (_) => _MainPageState()),
+              ],
+              child: _MainPage(),
+            );
+          }
+          return Container();
+        },
       ),
     );
   }
