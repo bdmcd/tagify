@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tagify/core/text/label.dart';
 import 'package:tagify/core/theme.dart';
 import 'package:tagify/model/now_playing.dart';
 import 'package:tagify/vm/player_vm.dart';
@@ -13,176 +14,218 @@ class NowPlayingView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: TagifyTheme.of(context).background,
+      body: Stack(
+        children: <Widget>[
+          Positioned.fill(
+            child: SafeArea(
+              child: Column(
+                children: <Widget>[
+                  Expanded(
+                    child: _BackgroundAlbumArt(),
+                  ),
+                  _NowPlayingView(),
+                ],
+              ),
+            )
+          ),
+          Container(
+            width: double.infinity,
+            height: MediaQuery.of(context).viewPadding.top,
+            child: _MirroredAlbumArt(
+              scale: 1.0,
+              imageAlignment: Alignment.topCenter,
+            )
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                child: Container(
+                  width: double.infinity,
+                  color: TagifyTheme.of(context).background2.withOpacity(0.3),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: MediaQuery.of(context).viewPadding.top,
+                  ),
+                )
+              ),
+            ),
+          )
+        ],
+      )
     );
   }
 }
 
+class _NowPlayingView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: Stack(
+        children: <Widget>[
+          Positioned.fill(
+            child: _MirroredAlbumArt(),
+          ),
+          ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              child: Container(
+                width: double.infinity,
+                color: TagifyTheme.of(context).background2.withOpacity(0.5),
+                child: _NowPlaying(),
+              )
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-// class NowPlayingView extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: TagifyTheme.of(context).background2,
-//       body: Container(
-//         child: Column(
-//           children: <Widget>[
-//             Expanded(
-//               child: Transform.scale(
-//                 scale: 1.1,
-//                 alignment: Alignment.center,
-//                 child:       Consumer<PlayerVM>(
-//                   builder: (context, player, _) {
-//                     return _getImageWidget(
-//                       player,
-//                     );
-//                   },
-//                 ),
-//               ),
-//             ),
-//             Container(
-//               child: Stack(
-//                 children: <Widget>[
-//                   Positioned.fill(
-//                     child: Transform.scale(
-//                       scale: 1.5,
-//                       alignment: Alignment.topCenter,
-//                       child: Transform(
-//                         alignment: Alignment.center,
-//                         transform: Matrix4.rotationX(math.pi),
-//                         child: Consumer<PlayerVM>(
-//                           builder: (context, player, _) {
-//                             return _getImageWidget(
-//                               player,
-//                               alignment: Alignment.bottomCenter,
-//                             );
-//                           }
-//                         ),
-//                       ),
-//                     )
-//                   ),
-//                   ClipRect(
-//                     child: BackdropFilter(
-//                       filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-//                       child: Container(
-//                         color: TagifyTheme.of(context).background2.withOpacity(0.65),
-//                         child: _NowPlaying()
-//                       )
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             )
-//           ],
-//         )
-//       ),
-//     );
-//   }
-// }
+class _NowPlaying extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 48, top: 24),
+      child: Column(
+        children: <Widget>[
+          //TODO: position status
+          Consumer<NowPlayingVM>(
+            builder: (context, nowPlaying, _) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: <Widget>[
+                    LabelTitle(
+                      text: nowPlaying.track?.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4),
+                    LabelSubtitle(
+                      text: nowPlaying.track?.artist?.name,
+                    )
+                  ],
+                ),
+              );
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Consumer<ShuffleVM>(
+                  builder: (context, shuffleVM, _) {
+                    return c.IconButton(
+                      icon: Icon(Icons.shuffle),
+                      onPressed: shuffleVM.toggleShuffle,
+                      highlighted: shuffleVM.isShuffling,
+                    );
+                  },
+                ),
+                c.IconButton(
+                  icon: Icon(Icons.chevron_left),
+                  onPressed: PlayerControls.of(context).previous,
+                  iconSize: 48,
+                ),
+                Consumer<ResumePauseVM>(
+                  builder: (context, resumePauseVM, _) {
+                    return c.IconButton(
+                      icon: Icon(resumePauseVM.isPaused ? Icons.play_circle_outline : Icons.pause_circle_outline),
+                      onPressed: resumePauseVM.toggle,
+                      iconSize: 64,
+                    );
+                  },
+                ),
+                c.IconButton(
+                  icon: Icon(Icons.chevron_right),
+                  onPressed: PlayerControls.of(context).next,
+                  iconSize: 48,
+                ),
+                Consumer<RepeatModeVM>(
+                  builder: (context, repeatModeVM, _) {
+                    return c.IconButton(
+                      icon: Icon(_getRepeatIcon(repeatModeVM)),
+                      onPressed: repeatModeVM.toggleRepeat,
+                      highlighted: repeatModeVM.repeatMode != RepeatMode.None,
+                    );
+                  },
+                )
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
 
-// class _NowPlaying extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Consumer<PlayerVM>(
-//       builder: (context, player, _) {
-//         final nowPlaying = player.nowPlaying;
-//         return Padding(
-//           padding: const EdgeInsets.only(bottom: 48),
-//           child: Column(
-//             children: <Widget>[
-//               Consumer<TagifyTheme>(
-//                 builder: (context, _, __) => Stack(
-//                   children: <Widget>[
-//                     Container(
-//                       height: 3,
-//                       color: TagifyTheme.of(context).tagify.withOpacity(0.3),
-//                     ),
-//                     Container(
-//                       height: 3,
-//                       width: 134,
-//                       color: TagifyTheme.of(context).tagify,
-//                     )
-//                   ],
-//                 ),
-//               ),
-//               Padding(
-//                 padding: const EdgeInsets.all(8.0),
-//                 child: Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                   children: <Widget>[
-//                     Text(
-//                       "0:30",
-//                       style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.w300),
-//                     ),
-//                     Text(
-//                       "3:43",
-//                       style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.w300),
-//                     )
-//                   ],
-//                 ),
-//               ),
-//               Column(
-//                 children: <Widget>[
-//                   Text(
-//                     nowPlaying.track.name,
-//                     style: Theme.of(context).textTheme.title.copyWith(fontWeight: FontWeight.w400, fontSize: 24),
-//                   ),
-//                   SizedBox(height: 8),
-//                   Text(
-//                     '${nowPlaying.track.artist.name}',
-//                     style: Theme.of(context).textTheme.subhead.copyWith(fontWeight: FontWeight.w300),
-//                   )
-//                 ],
-//               ),
-//               Padding(
-//                 padding: const EdgeInsets.only(top: 16),
-//                 child: Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                   children: <Widget>[
-//                     c.IconButton(
-//                       icon: Icon(Icons.shuffle),
-//                       onPressed: player.toggleShuffle,
-//                       highlightedColor: TagifyTheme.of(context).tagifyDark,
-//                       highlighted: nowPlaying.isShuffling,
-//                     ),
-//                     c.IconButton(
-//                       icon: Icon(Icons.chevron_left),
-//                       onPressed: player.previous,
-//                       iconSize: 48,
-//                     ),
-//                     c.IconButton(
-//                       icon: Icon(nowPlaying.isPaused ? Icons.play_circle_outline : Icons.pause_circle_outline),
-//                       onPressed: nowPlaying.isPaused ? player.resume : player.pause,
-//                       iconSize: 64,
-//                     ),
-//                     c.IconButton(
-//                       icon: Icon(Icons.chevron_right),
-//                       onPressed: player.next,
-//                       iconSize: 48,
-//                     ),
-//                     c.IconButton(
-//                       icon: Icon(nowPlaying.repeatMode == RepeatMode.RepeatOne ? Icons.repeat_one : Icons.repeat),
-//                       highlighted: nowPlaying.repeatMode != RepeatMode.None,
-//                       highlightedColor: TagifyTheme.of(context).tagifyDark,
-//                       onPressed: player.toggleRepeat,
-//                     ),
-//                   ],
-//                 ),
-//               )
-//             ],
-//           ),
-//         );
-//       },
-//     );
-//   }
-// }
+IconData _getRepeatIcon(RepeatModeVM repeatModeVM) {
+  switch (repeatModeVM.repeatMode) {
+    case RepeatMode.None: return Icons.repeat;
+    case RepeatMode.RepeatAll: return Icons.repeat;
+    case RepeatMode.RepeatOne: return Icons.repeat_one;
+    default: return Icons.repeat;
+  }
+}
 
-// Widget _getImageWidget(PlayerVM player, { Alignment alignment = Alignment.center }) {
-//   if (player.nowPlaying != null && player.nowPlaying.track.album != null && player.nowPlaying.track.album.albumArt != null) {
-//     return Image.network(
-//       player.nowPlaying.track.album.albumArt,
-//       fit: BoxFit.cover,
-//       alignment: alignment
-//     );
-//   }
-//   return Container();
-// }
+class _BackgroundAlbumArt extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Transform.scale(
+      scale: 1.0,
+      alignment: Alignment.center,
+      child: Consumer<AlbumArtVM>(
+        builder: (context, albumArtVM, _) {
+          return _getImageWidget(albumArtVM);
+        },
+      ),
+    );
+  }
+}
+
+class _MirroredAlbumArt extends StatelessWidget {
+  final double scale;
+  final Alignment alignment;
+  final Alignment imageAlignment;
+
+  _MirroredAlbumArt({
+    this.scale = 1.5,
+    this.alignment = Alignment.topCenter,
+    this.imageAlignment = Alignment.bottomCenter,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.scale(
+      scale: this.scale,
+      alignment: this.alignment,
+      child: Transform(
+        alignment: Alignment.center,
+        transform: Matrix4.rotationX(math.pi),
+        child: Consumer<AlbumArtVM>(
+          builder: (context, albumArtVM, _) {
+            return _getImageWidget(
+              albumArtVM,
+              alignment: this.imageAlignment,
+            );
+          }
+        ),
+      ),
+    );
+  }
+}
+
+Widget _getImageWidget(AlbumArtVM albumArtVM, { Alignment alignment = Alignment.center }) {
+  if (albumArtVM.albumArt != null) {
+    return Image.network(
+      albumArtVM.albumArt,
+      fit: BoxFit.cover,
+      alignment: alignment
+    );
+  }
+  return Container();
+}

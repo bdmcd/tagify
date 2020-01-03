@@ -75,7 +75,7 @@ class AlbumArtVM extends PlayerNotifier {
     Player.instance.albumArtListeners.add(this);
   }
 
-  //TODO: get album art
+  String get albumArt => Player.instance.track?.album?.albumArt;
 }
 
 class PlayerControls extends ChangeNotifier {

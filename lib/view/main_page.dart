@@ -22,7 +22,6 @@ class MainPage extends StatelessWidget {
       body: FutureBuilder<bool>(
         future: NowPlayingVM.of(context).init(),
         builder: (context, snapshot) {
-          print("building");
           if (snapshot.hasData && snapshot.data) {
             return MultiProvider(
               providers: [

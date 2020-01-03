@@ -14,11 +14,11 @@ class TagifyTheme extends ChangeNotifier {
   final Color washed = Color(0xFFFFE5DB);
   final Color darkened = Color(0xFFBD5200);
   
-  final Color foreground = Color(0xFF292929);
-  final Color foreground2 = Color(0xFF191919);
+  final Color foreground = Color(0xFFF5F5F5);//Color(0xFF292929);
+  final Color foreground2 = Color(0xFFE5E5E5);//Color(0xFF191919);
 
-  final Color background = Color(0xFFF5F5F5);
-  final Color background2 = Color(0xFFEEEEEE);
+  final Color background = Color(0xFF222222);//Color(0xFFF5F5F5);
+  final Color background2 = Color(0xFF191919);//Color(0xFFEEEEEE);
 
   final Color disabled = Color(0xCC999999);
 
