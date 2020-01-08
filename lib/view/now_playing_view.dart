@@ -70,10 +70,10 @@ class _NowPlayingView extends StatelessWidget {
           ),
           ClipRect(
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
               child: Container(
                 width: double.infinity,
-                color: TagifyTheme.of(context).background2.withOpacity(0.5),
+                color: TagifyTheme.of(context).background2.withOpacity(0.6),
                 child: _NowPlaying(),
               )
             ),
@@ -87,78 +87,87 @@ class _NowPlayingView extends StatelessWidget {
 class _NowPlaying extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 48, top: 24),
-      child: Column(
-        children: <Widget>[
-          //TODO: position status
-          Consumer<NowPlayingVM>(
-            builder: (context, nowPlaying, _) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: <Widget>[
-                    LabelTitle(
-                      text: nowPlaying.track?.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+    return Column(
+      children: <Widget>[
+        //TODO: position status
+        Container(
+          height: 2,
+          width: double.infinity,
+          color: TagifyTheme.of(context).tagifyDark,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 48, top: 24),
+          child: Column(
+            children: <Widget>[
+              Consumer<NowPlayingVM>(
+                builder: (context, nowPlaying, _) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: <Widget>[
+                        LabelTitle(
+                          text: nowPlaying.track?.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 4),
+                        LabelSubtitle(
+                          text: nowPlaying.track?.artist?.name,
+                        )
+                      ],
                     ),
-                    SizedBox(height: 4),
-                    LabelSubtitle(
-                      text: nowPlaying.track?.artist?.name,
+                  );
+                },
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Consumer<ShuffleVM>(
+                      builder: (context, shuffleVM, _) {
+                        return c.IconButton(
+                          icon: Icon(Icons.shuffle),
+                          onPressed: shuffleVM.toggleShuffle,
+                          highlighted: shuffleVM.isShuffling,
+                        );
+                      },
+                    ),
+                    c.IconButton(
+                      icon: Icon(Icons.chevron_left),
+                      onPressed: PlayerControls.of(context).previous,
+                      iconSize: 48,
+                    ),
+                    Consumer<ResumePauseVM>(
+                      builder: (context, resumePauseVM, _) {
+                        return c.IconButton(
+                          icon: Icon(resumePauseVM.isPaused ? Icons.play_circle_outline : Icons.pause_circle_outline),
+                          onPressed: resumePauseVM.toggle,
+                          iconSize: 64,
+                        );
+                      },
+                    ),
+                    c.IconButton(
+                      icon: Icon(Icons.chevron_right),
+                      onPressed: PlayerControls.of(context).next,
+                      iconSize: 48,
+                    ),
+                    Consumer<RepeatModeVM>(
+                      builder: (context, repeatModeVM, _) {
+                        return c.IconButton(
+                          icon: Icon(_getRepeatIcon(repeatModeVM)),
+                          onPressed: repeatModeVM.toggleRepeat,
+                          highlighted: repeatModeVM.repeatMode != RepeatMode.None,
+                        );
+                      },
                     )
                   ],
                 ),
-              );
-            },
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Consumer<ShuffleVM>(
-                  builder: (context, shuffleVM, _) {
-                    return c.IconButton(
-                      icon: Icon(Icons.shuffle),
-                      onPressed: shuffleVM.toggleShuffle,
-                      highlighted: shuffleVM.isShuffling,
-                    );
-                  },
-                ),
-                c.IconButton(
-                  icon: Icon(Icons.chevron_left),
-                  onPressed: PlayerControls.of(context).previous,
-                  iconSize: 48,
-                ),
-                Consumer<ResumePauseVM>(
-                  builder: (context, resumePauseVM, _) {
-                    return c.IconButton(
-                      icon: Icon(resumePauseVM.isPaused ? Icons.play_circle_outline : Icons.pause_circle_outline),
-                      onPressed: resumePauseVM.toggle,
-                      iconSize: 64,
-                    );
-                  },
-                ),
-                c.IconButton(
-                  icon: Icon(Icons.chevron_right),
-                  onPressed: PlayerControls.of(context).next,
-                  iconSize: 48,
-                ),
-                Consumer<RepeatModeVM>(
-                  builder: (context, repeatModeVM, _) {
-                    return c.IconButton(
-                      icon: Icon(_getRepeatIcon(repeatModeVM)),
-                      onPressed: repeatModeVM.toggleRepeat,
-                      highlighted: repeatModeVM.repeatMode != RepeatMode.None,
-                    );
-                  },
-                )
-              ],
-            ),
-          )
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -215,6 +224,39 @@ class _MirroredAlbumArt extends StatelessWidget {
           }
         ),
       ),
+    );
+  }
+}
+
+class TrackProgress extends StatefulWidget {
+  @override
+  _TrackProgressState createState() => _TrackProgressState();
+}
+
+class _TrackProgressState extends State<TrackProgress> {
+  double _progress = 0;
+
+  void updateProgress(double p) {
+    setState(() {
+      _progress = p;
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Slider(
+      activeColor: TagifyTheme.of(context).darkened,
+      inactiveColor: TagifyTheme.of(context).darkened.withOpacity(0.25),
+      min: 0,
+      max: 1,
+      value: _progress,
+      onChanged: updateProgress,
     );
   }
 }

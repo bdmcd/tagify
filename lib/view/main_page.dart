@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tagify/core/theme.dart';
@@ -42,12 +44,45 @@ class _MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<_MainPageState>(
       builder: (context, state, _) {
-        return Column(
+        return Stack(
           children: <Widget>[
-            Expanded(
-              child: buildView(state)
+            Positioned.fill(
+              child: Consumer<AlbumArtVM>(
+                builder: (context, albumArtVM, _) {
+                  return Image.network(
+                    albumArtVM.albumArt,
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
             ),
-            _BottomBar()
+            Column(
+              children: <Widget>[
+                Expanded(
+                  child: ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+                      child: Container(
+                        width: double.infinity,
+                        color: TagifyTheme.of(context).background.withOpacity(0.85),
+                        child: buildView(state)
+                      )
+                    ),
+                  ),
+                ),
+                // _BottomBar(),
+                ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                    child: Container(
+                      width: double.infinity,
+                      color: TagifyTheme.of(context).background2.withOpacity(0.65),
+                      child: _BottomBar()
+                    )
+                  ),
+                ),
+              ],
+            ),
           ],
         );
       },
@@ -68,36 +103,38 @@ class _MainPage extends StatelessWidget {
 class _BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: TagifyTheme.of(context).background2,
-      child: Column(
-        children: <Widget>[
-          NowPlayingBar(),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                buildBottomButton(
-                  context: context,
-                  page: Page.tracks,
-                  icon: Icon(Icons.music_note),
-                ),
-                buildBottomButton(
-                  context: context,
-                  page: Page.artists,
-                  icon: Icon(Icons.person),
-                ),
-                buildBottomButton(
-                  context: context,
-                  page: Page.albums,
-                  icon: Icon(Icons.album),
-                )
-              ],
-            ),
+    return Column(
+      children: <Widget>[
+        Container(
+          height: 2,
+          width: double.infinity,
+          color: TagifyTheme.of(context).tagifyDark,
+        ),
+        NowPlayingBar(),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              buildBottomButton(
+                context: context,
+                page: Page.tracks,
+                icon: Icon(Icons.music_note),
+              ),
+              buildBottomButton(
+                context: context,
+                page: Page.artists,
+                icon: Icon(Icons.person),
+              ),
+              buildBottomButton(
+                context: context,
+                page: Page.albums,
+                icon: Icon(Icons.album),
+              )
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
